@@ -24,7 +24,7 @@ defmodule ExBanking do
   """
   @spec create_user(user :: String.t()) :: :ok | {:error, Type.error_code()}
   def create_user(user) do
-    with true <-  Validation.valid_user?(user),
+    with true <- Validation.valid_user?(user),
          {:account_exists, false} <- Bank.account_exists(user),
          :ok <- Bank.create_account(user),
          {:ok, _} <- AccountManager.new_account(user) do
@@ -42,6 +42,13 @@ defmodule ExBanking do
   @spec deposit(user :: String.t(), amount :: number, currency :: String.t()) ::
           {:ok, new_balance :: number} | {:error, Type.error_code()}
   def deposit(user, amount, currency) do
+    with true <- Validation.valid_arguments?(user, currency),
+         {:account_exists, true} <- Bank.account_exists(user) do
+      Account.deposit(user, amount, currency)
+    else
+      false -> {:error, :wrong_arguments}
+      {:account_exists, false} -> {:error, :user_does_not_exist}
+    end
   end
 
   @doc """
@@ -59,6 +66,13 @@ defmodule ExBanking do
   @spec get_balance(user :: String.t(), currency :: String.t()) ::
           {:ok, balance :: number} | {:error, Type.error_code()}
   def get_balance(user, currency) do
+    with true <- Validation.valid_arguments?(user, currency),
+         {:account_exists, true} <- Bank.account_exists(user) do
+      Account.account_balance(user, currency)
+    else
+      false -> {:error, :wrong_arguments}
+      {:account_exists, false} -> {:error, :user_does_not_exist}
+    end
   end
 
   @doc """

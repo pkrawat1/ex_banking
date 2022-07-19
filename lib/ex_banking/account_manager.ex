@@ -1,6 +1,6 @@
 defmodule ExBanking.AccountManager do
   use DynamicSupervisor
-  
+
   alias ExBanking.Account
 
   @process_name __MODULE__
@@ -14,6 +14,6 @@ defmodule ExBanking.AccountManager do
   end
 
   def new_account(user) do
-    DynamicSupervisor.start_child(@process_name, {Account, {:global, user}})
+    DynamicSupervisor.start_child(@process_name, {Account, :"#{user}"})
   end
 end
