@@ -4,6 +4,8 @@ defmodule ExBanking do
   """
   alias ExBanking.Type
   alias ExBanking.Bank
+  alias ExBanking.Account
+  alias ExBanking.AccountManager
   alias ExBanking.Validation
 
   @doc """
@@ -14,13 +16,18 @@ defmodule ExBanking do
 
       iex> ExBanking.create_user("new")
       :ok
+      iex> ExBanking.create_user("new")
+      {:error, :user_already_exists}
+      iex> ExBanking.create_user(1)
+      {:error, :wrong_arguments}
 
   """
   @spec create_user(user :: String.t()) :: :ok | {:error, Type.error_code()}
   def create_user(user) do
     with true <-  Validation.valid_user?(user),
          {:account_exists, false} <- Bank.account_exists(user),
-         :ok <- Bank.create_account(user) do
+         :ok <- Bank.create_account(user),
+         {:ok, _} <- AccountManager.new_account(user) do
       :ok
     else
       false -> {:error, :wrong_arguments}
