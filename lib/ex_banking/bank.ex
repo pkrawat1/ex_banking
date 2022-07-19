@@ -7,7 +7,7 @@ defmodule ExBanking.Bank do
   @process_name __MODULE__
 
   def start_link(_) do
-    GenServer.start_link(@process_name, MapSet.new, name: @process_name)
+    GenServer.start_link(@process_name, MapSet.new(), name: @process_name)
   end
 
   def create_account(user) do
@@ -31,7 +31,7 @@ defmodule ExBanking.Bank do
 
   @impl true
   def handle_call({:exists, user}, _from, accounts) do
-    {:reply, user in accounts, accounts}
+    {:reply, {:account_exists, user in accounts}, accounts}
   end
 
   @impl true
