@@ -61,9 +61,9 @@ defmodule ExBanking do
           {:ok, new_balance :: number} | {:error, Type.error_code()}
   def withdraw(user, amount, currency) do
     with true <- Validation.valid_arguments?(user, currency),
-         {:account_exists, true} <- Bank.account_exists(user), 
+         {:account_exists, true} <- Bank.account_exists(user),
          {:ok, balance} <- Account.withdraw(user, amount, currency) do
-        {:ok, balance}
+      {:ok, balance}
     else
       false -> {:error, :wrong_arguments}
       {:account_exists, false} -> {:error, :user_does_not_exist}
@@ -79,7 +79,7 @@ defmodule ExBanking do
           {:ok, balance :: number} | {:error, Type.error_code()}
   def get_balance(user, currency) do
     with true <- Validation.valid_arguments?(user, currency),
-         {:account_exists, true} <- Bank.account_exists(user), 
+         {:account_exists, true} <- Bank.account_exists(user),
          {:ok, balance} <- Account.account_balance(user, currency) do
       {:ok, balance}
     else
