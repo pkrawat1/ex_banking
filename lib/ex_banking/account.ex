@@ -31,7 +31,7 @@ defmodule ExBanking.Account do
   end
 
   def fund_transfer(from_user, to_user, amount, currency) do
-    {:ok, 0, 0}
+    GenServer.call(:"#{from_user}", {:fund_transfer, to_user, currency, amount})
   end
 
   # Callbacks
@@ -76,6 +76,24 @@ defmodule ExBanking.Account do
       {:reply, {:ok, money_format(updated_account[currency])}, updated_account}
     else
       false -> {:reply, :not_enough_money, account}
+    end
+  end
+
+  @impl true
+  def handle_call({:fund_transfer, to_user, currency, amount}, _from, account = %{@pending_operations => ops}) when ops < @max_operations do
+    start_operation_callback()
+
+    with true <- Validation.can_withdraw?(account, currency, amount),
+         {:ok, to_user_balance} <- deposit(to_user, amount, currency) do
+      updated_account =
+        account
+        |> Map.update(currency, amount, &Decimal.sub(&1 || 0, amount))
+        |> Map.update(@pending_operations, 0, &(&1 + 1))
+
+      {:reply, {:ok, money_format(updated_account[currency]), to_user_balance}, updated_account}
+    else
+      false -> {:reply, :not_enough_money, account}
+      :too_many_requests_to_user -> {:reply, :too_many_requests_to_receiver}
     end
   end
 
