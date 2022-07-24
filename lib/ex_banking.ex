@@ -111,9 +111,11 @@ defmodule ExBanking do
            Account.fund_transfer(from_user, to_user, amount, currency) do
       {:ok, from_user_balance, to_user_balance}
     else
+      false -> {:error, :wrong_arguments}
       {:account_exists, false, ^from_user} -> {:error, :sender_does_not_exist}
       {:account_exists, false, ^to_user} -> {:error, :receiver_does_not_exist}
-      false -> {:error, :wrong_arguments}
+      :too_many_requests_to_user -> {:error, :too_many_requests_to_sender}
+      :too_many_requests_to_receiver -> {:error, :too_many_requests_to_receiver}
     end
   end
 end

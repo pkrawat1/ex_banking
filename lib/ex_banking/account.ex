@@ -93,7 +93,7 @@ defmodule ExBanking.Account do
       {:reply, {:ok, money_format(updated_account[currency]), to_user_balance}, updated_account}
     else
       false -> {:reply, :not_enough_money, account}
-      :too_many_requests_to_user -> {:reply, :too_many_requests_to_receiver}
+      :too_many_requests_to_user -> {:reply, :too_many_requests_to_receiver, account}
     end
   end
 

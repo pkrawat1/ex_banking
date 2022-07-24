@@ -36,5 +36,10 @@ defmodule ExBankingTest do
     assert ExBanking.create_user("to_user") == :ok
     assert ExBanking.deposit("from_user", 20, "usd") == {:ok, 20.0}
     assert ExBanking.send("from_user", "to_user", 10, "usd") == {:ok, 10.0, 10.0}
+    Enum.each(0..9, fn _ -> ExBanking.get_balance("from_user", "usd") end)
+    assert ExBanking.send("from_user", "to_user", 10, "usd") == {:error, :too_many_requests_to_sender}
+    :timer.sleep(100)
+    Enum.each(0..9, fn _ -> ExBanking.get_balance("to_user", "usd") end)
+    assert ExBanking.send("from_user", "to_user", 10, "usd") == {:error, :too_many_requests_to_receiver}
   end
 end
