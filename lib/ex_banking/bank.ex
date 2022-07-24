@@ -31,7 +31,7 @@ defmodule ExBanking.Bank do
 
   @impl true
   def handle_call({:exists, user}, _from, accounts) do
-    {:reply, {:account_exists, user in accounts}, accounts}
+    {:reply, {:account_exists, user in accounts, user}, accounts}
   end
 
   @impl true

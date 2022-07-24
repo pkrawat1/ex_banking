@@ -25,13 +25,13 @@ defmodule ExBanking do
   @spec create_user(user :: String.t()) :: :ok | {:error, Type.error_code()}
   def create_user(user) do
     with true <- Validation.valid_user?(user),
-         {:account_exists, false} <- Bank.account_exists(user),
+         {:account_exists, false, _} <- Bank.account_exists(user),
          :ok <- Bank.create_account(user),
          {:ok, _} <- AccountManager.new_account(user) do
       :ok
     else
       false -> {:error, :wrong_arguments}
-      {:account_exists, true} -> {:error, :user_already_exists}
+      {:account_exists, true, _} -> {:error, :user_already_exists}
     end
   end
 
@@ -43,12 +43,12 @@ defmodule ExBanking do
           {:ok, new_balance :: number} | {:error, Type.error_code()}
   def deposit(user, amount, currency) do
     with true <- Validation.valid_arguments?(user, currency),
-         {:account_exists, true} <- Bank.account_exists(user),
+         {:account_exists, true, _} <- Bank.account_exists(user),
          {:ok, balance} <- Account.deposit(user, amount, currency) do
       {:ok, balance}
     else
       false -> {:error, :wrong_arguments}
-      {:account_exists, false} -> {:error, :user_does_not_exist}
+      {:account_exists, false, _} -> {:error, :user_does_not_exist}
       :too_many_requests_to_user -> {:error, :too_many_requests_to_user}
     end
   end
@@ -61,12 +61,12 @@ defmodule ExBanking do
           {:ok, new_balance :: number} | {:error, Type.error_code()}
   def withdraw(user, amount, currency) do
     with true <- Validation.valid_arguments?(user, currency),
-         {:account_exists, true} <- Bank.account_exists(user),
+         {:account_exists, true, _} <- Bank.account_exists(user),
          {:ok, balance} <- Account.withdraw(user, amount, currency) do
       {:ok, balance}
     else
       false -> {:error, :wrong_arguments}
-      {:account_exists, false} -> {:error, :user_does_not_exist}
+      {:account_exists, false, _} -> {:error, :user_does_not_exist}
       :not_enough_money -> {:error, :not_enough_money}
       :too_many_requests_to_user -> {:error, :too_many_requests_to_user}
     end
@@ -79,12 +79,12 @@ defmodule ExBanking do
           {:ok, balance :: number} | {:error, Type.error_code()}
   def get_balance(user, currency) do
     with true <- Validation.valid_arguments?(user, currency),
-         {:account_exists, true} <- Bank.account_exists(user),
+         {:account_exists, true, _} <- Bank.account_exists(user),
          {:ok, balance} <- Account.account_balance(user, currency) do
       {:ok, balance}
     else
       false -> {:error, :wrong_arguments}
-      {:account_exists, false} -> {:error, :user_does_not_exist}
+      {:account_exists, false, _} -> {:error, :user_does_not_exist}
       :too_many_requests_to_user -> {:error, :too_many_requests_to_user}
     end
   end
@@ -103,5 +103,17 @@ defmodule ExBanking do
           {:ok, from_user_balance :: number, to_user_balance :: number}
           | {:error, Type.error_code()}
   def send(from_user, to_user, amount, currency) do
+    with true <- Validation.valid_arguments?(from_user, currency),
+         true <- Validation.valid_arguments?(to_user, currency),
+         {:account_exists, true, _} <- Bank.account_exists(from_user),
+         {:account_exists, true, _} <- Bank.account_exists(to_user),
+         {:ok, from_user_balance, to_user_balance} <-
+           Account.fund_transfer(from_user, to_user, amount, currency) do
+      {:ok, from_user_balance, to_user_balance}
+    else
+      {:account_exists, false, ^from_user} -> {:error, :sender_does_not_exist}
+      {:account_exists, false, ^to_user} -> {:error, :receiver_does_not_exist}
+      false -> {:error, :wrong_arguments}
+    end
   end
 end

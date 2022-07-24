@@ -3,9 +3,9 @@ defmodule ExBankingTest do
   doctest ExBanking, async: false
 
   test "create user" do
-    assert ExBanking.Bank.account_exists("new_user") == {:account_exists, false}
+    assert ExBanking.Bank.account_exists("new_user") == {:account_exists, false, "new_user"}
     assert ExBanking.create_user("new_user") == :ok
-    assert ExBanking.Bank.account_exists("new_user") == {:account_exists, true}
+    assert ExBanking.Bank.account_exists("new_user") == {:account_exists, true, "new_user"}
     assert ExBanking.create_user("new_user") == {:error, :user_already_exists}
   end
 
@@ -29,5 +29,12 @@ defmodule ExBankingTest do
 
     assert ExBanking.get_balance("too_many_requests_to_user", "usd") ==
              {:error, :too_many_requests_to_user}
+  end
+
+  test "fund transfer" do
+    assert ExBanking.create_user("from_user") == :ok
+    assert ExBanking.create_user("to_user") == :ok
+    assert ExBanking.deposit("from_user", 20, "usd") == {:ok, 20.0}
+    assert ExBanking.send("from_user", "to_user", 10, "usd") == {:ok, 10.0, 10.0}
   end
 end

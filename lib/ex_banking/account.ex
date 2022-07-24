@@ -30,6 +30,10 @@ defmodule ExBanking.Account do
     GenServer.call(:"#{name}", {:withdraw, currency, amount})
   end
 
+  def fund_transfer(from_user, to_user, amount, currency) do
+    {:ok, 0, 0}
+  end
+
   # Callbacks
 
   @impl true
