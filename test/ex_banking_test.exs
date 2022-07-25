@@ -21,6 +21,7 @@ defmodule ExBankingTest do
     assert ExBanking.deposit("withdraw_user", 20, "usd") == {:ok, 20.0}
     assert ExBanking.withdraw("withdraw_user", 2, "usd") == {:ok, 18.0}
     assert ExBanking.get_balance("withdraw_user", "usd") == {:ok, 18.0}
+    assert ExBanking.withdraw("withdraw_user", 20, "usd") == {:error, :not_enough_money}
   end
 
   test "too_many_requests_to_user" do
@@ -38,11 +39,16 @@ defmodule ExBankingTest do
     assert ExBanking.send("from_user", "to_user", 10, "usd") == {:ok, 10.0, 10.0}
 
     Enum.each(0..9, fn _ -> ExBanking.get_balance("from_user", "usd") end)
-    assert ExBanking.send("from_user", "to_user", 10, "usd") == {:error, :too_many_requests_to_sender}
+
+    assert ExBanking.send("from_user", "to_user", 10, "usd") ==
+             {:error, :too_many_requests_to_sender}
+
     :timer.sleep(100)
 
     Enum.each(0..9, fn _ -> ExBanking.get_balance("to_user", "usd") end)
-    assert ExBanking.send("from_user", "to_user", 10, "usd") == {:error, :too_many_requests_to_receiver}
+
+    assert ExBanking.send("from_user", "to_user", 10, "usd") ==
+             {:error, :too_many_requests_to_receiver}
 
     :timer.sleep(100)
     assert ExBanking.get_balance("from_user", "usd") == {:ok, 10.0}

@@ -80,7 +80,12 @@ defmodule ExBanking.Account do
   end
 
   @impl true
-  def handle_call({:fund_transfer, to_user, currency, amount}, _from, account = %{@pending_operations => ops}) when ops < @max_operations do
+  def handle_call(
+        {:fund_transfer, to_user, currency, amount},
+        _from,
+        account = %{@pending_operations => ops}
+      )
+      when ops < @max_operations do
     start_operation_callback()
 
     with true <- Validation.can_withdraw?(account, currency, amount),
