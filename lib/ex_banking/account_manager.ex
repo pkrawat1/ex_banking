@@ -1,4 +1,8 @@
 defmodule ExBanking.AccountManager do
+  @moduledoc """
+  Dynamic worker handler to keep individual accounts live and manage
+  """
+
   use DynamicSupervisor
 
   alias ExBanking.Account

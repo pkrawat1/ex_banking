@@ -1,4 +1,8 @@
 defmodule ExBanking.Type do
+  @moduledoc """
+  Types for handling system responses
+  """
+
   @type error_code ::
           :wrong_arguments
           | :user_already_exists

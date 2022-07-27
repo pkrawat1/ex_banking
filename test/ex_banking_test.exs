@@ -14,6 +14,8 @@ defmodule ExBankingTest do
     assert ExBanking.deposit("deposit_user", 20, "usd") == {:ok, 20.0}
     assert ExBanking.get_balance("deposit_user", "usd") == {:ok, 20.0}
     assert ExBanking.get_balance("deposit_user", "inr") == {:ok, 0.0}
+    assert ExBanking.deposit("deposit_user", -40, "usd") == {:error, :wrong_arguments}
+    assert ExBanking.get_balance("deposit_user", "usd") == {:ok, 20.0}
   end
 
   test "withdraw money" do
@@ -22,6 +24,7 @@ defmodule ExBankingTest do
     assert ExBanking.withdraw("withdraw_user", 2, "usd") == {:ok, 18.0}
     assert ExBanking.get_balance("withdraw_user", "usd") == {:ok, 18.0}
     assert ExBanking.withdraw("withdraw_user", 20, "usd") == {:error, :not_enough_money}
+    assert ExBanking.withdraw("withdraw_user", -20, "usd") == {:error, :wrong_arguments}
   end
 
   test "too_many_requests_to_user" do

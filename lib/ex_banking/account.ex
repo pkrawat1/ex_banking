@@ -67,15 +67,17 @@ defmodule ExBanking.Account do
       when ops < @max_operations do
     start_operation_callback()
 
-    with true <- Validation.can_withdraw?(account, currency, amount) do
-      updated_account =
-        account
-        |> Map.update(currency, amount, &Decimal.sub(&1 || 0, amount))
-        |> Map.update(@pending_operations, 0, &(&1 + 1))
+    case Validation.can_withdraw?(account[currency] || 0, amount) do
+      true ->
+        updated_account =
+          account
+          |> Map.update(currency, amount, &Decimal.sub(&1 || 0, amount))
+          |> Map.update(@pending_operations, 0, &(&1 + 1))
 
-      {:reply, {:ok, money_format(updated_account[currency])}, updated_account}
-    else
-      false -> {:reply, :not_enough_money, account}
+        {:reply, {:ok, money_format(updated_account[currency])}, updated_account}
+
+      false ->
+        {:reply, :not_enough_money, account}
     end
   end
 
@@ -88,7 +90,7 @@ defmodule ExBanking.Account do
       when ops < @max_operations do
     start_operation_callback()
 
-    with true <- Validation.can_withdraw?(account, currency, amount),
+    with true <- Validation.can_withdraw?(account[currency] || 0, amount),
          {:ok, to_user_balance} <- deposit(to_user, amount, currency) do
       updated_account =
         account
